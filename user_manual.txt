@@ -1,0 +1,49 @@
+libraries used in this project:
+- pandas
+- numpy
+- sklearn
+- json (installed with python by default)
+- tensorflow
+- math (installed with python by default)
+
+
+to run: 
+
+[1] generating positions.json
+(a positions.json should already be included in the file
+but you can re-generate it)
+-> run imp_pos_to_json.py
+
+helper files:
+1). find_consurf_intervals.py
+-> has function find_intervals, takes in a consurf_scores.txt file
+and outputs a list of intervals in format
+[(start_pos, length of interval), (start_pos2, length2), ...]
+2). reg_2.py
+-> contains run_regression which runs the logistic regressor 
+-> will return the mutual information score for a given interval
+3). binary_vectors.py
+-> construct_x gives the binary beatures by calling compare_string
+(also inside binary_vectors.py)
+-> construct_y gives the respective y-values
+
+non-python files you need to make sure you have:
+1). consurf_scores.txt (outputted by the consurf database when you input an alignment file)
+2). distances.csv (contains 2D array of distances between each antigen and serum - produced 
+by the cartography)
+3). alignment.fa (outputted by jalview when you perform a muscle alignment or can be 
+acquired online -- contains all sequence data (amino acid sequences for the HA protein))
+
+[2] CNN
+to run: 
+-> run cnn.py
+helper files:
+1). aaindex_vectors.py are called by cnn.py for feature construction
+2). get_metrics.py are called by cnn.py at the end of the run 
+to get specificity, sensitivity, and accuracy
+
+non-python files to make sure you have: 
+(in addition to distances.csv and alignment.fa)
+1-10). 10 .xlsx files containing aaindex information
+(must be in same directory) 
+-> names of these 10 aaindex files are stored as a list in aaindex_vectors.py
