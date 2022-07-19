@@ -59,18 +59,24 @@ y_train, y_test = y_vals[:train_amt], y_vals[train_amt:]
 
 # build model
 model = models.Sequential()
+
 model.add(layers.Conv1D(193, (96), strides=3, activation='relu', input_shape = (x_vals.shape[1], x_vals.shape[2]), padding='same'))
 model.add(layers.MaxPooling1D(pool_size=(x_vals.shape[2]), padding='same'))
 model.add(layers.Dropout(0.1))
+
 model.add(layers.Conv1D(212, (5), activation='relu', strides=2, padding='same'))
 model.add(layers.MaxPooling1D(pool_size=(x_vals.shape[2]), padding='same'))
 model.add(layers.Dropout(0.165))
+
 model.add(layers.Conv1D(109, (5), activation='relu', strides=3, padding='same'))
 model.add(layers.MaxPooling1D(pool_size=(x_vals.shape[2]), padding='same'))
 model.add(layers.Dropout(0.1))
+
 model.add(layers.Flatten())
+
 model.add(layers.Dense(256, activation="sigmoid"))#))
 model.add(layers.Dropout(0.241))
+
 model.add(layers.Dense(1))
 
 

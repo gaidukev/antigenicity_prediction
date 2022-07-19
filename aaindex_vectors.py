@@ -12,13 +12,14 @@ pos = []
 with open("positions.json", "r") as file:
     pos = json.load(file)
 
-
+print("*****************************************************************************changes")
 intervals = []
 for position in pos:
     if len(intervals) == 0:
         intervals.append([position, 1])
     else:
-        if intervals[-1:][0][0] == (position - 1):
+        #  why not just intervals[-1][0]    *shouldn't this be position - intervals[-1:][0][1]
+        if intervals[-1:][0][0] == (position - intervals[-1:][0][1]): #(position - 1):
             intervals[-1:][0][1] += 1
         else:
             intervals.append([position, 1])
