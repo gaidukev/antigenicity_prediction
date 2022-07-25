@@ -19,12 +19,12 @@ for interval in intervals:
     seq_length = interval[1] - interval[0]
 
     mutual_info = reg_2.run_regression(seq_length, interval[0], distances, alignment, False)
-    if mutual_info >= 0: # 1.0e-4:
+    if mutual_info > 0: # 1.0e-4:
         # could probably modify thershold of importance (originally 1e-4)
         for i in range(interval[0], interval[1]):
             important_positions.append(i)
 
-with open("positions.json", "w") as outfile:
+with open("positions(3).json", "w") as outfile:
     json.dump(important_positions, outfile)
 # store results in positions.json
 

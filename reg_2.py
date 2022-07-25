@@ -13,6 +13,9 @@ random.seed()
 # note: i'm not sure if any of this is correct
 
 def run_regression(len_sequence, start_pos, distances, alignment, verbose = True):
+    ones = 0
+    zeros = 0
+    tones = 0
     if verbose:
         # this is just for debugging purposes
         print("START POS: ", start_pos, "LEN SEQUENCE: ", len_sequence)
@@ -36,13 +39,16 @@ def run_regression(len_sequence, start_pos, distances, alignment, verbose = True
         for val in range(len(y_return)):
 
             if y_return[val] == 1:
+                ones += 1
                 chance = random.random()
                 # only append 1-entries with a certain probability (to make data less skewed & increase the mutal info
                 # scores) (is this allowed?)
-                if chance > 0.6:
+                if chance > 0.8:
+                    tones += 1
                     x_vals = np.vstack((x_vals, x_return[val])) 
                     y_vals = np.hstack((y_vals, y_return[val]))
             else:
+                zeros += 1
                 # always append the 0-entries because there's not that many of them
                 x_vals = np.vstack((x_vals, x_return[val])) 
                 y_vals = np.hstack((y_vals, y_return[val]))
@@ -64,6 +70,9 @@ def run_regression(len_sequence, start_pos, distances, alignment, verbose = True
     metric = metrics.mutual_info_score(y_vals, y_pred)
     # this gives the mutual info
     print(metric)
+    print("ONES:", ones)
+    print("True Ones:", tones)
+    print("ZEROS:", zeros)
     return metric
 
 

@@ -12,20 +12,8 @@ pos = []
 with open("positions.json", "r") as file:
     pos = json.load(file)
 
-print("*****************************************************************************changes")
-intervals = []
-for position in pos:
-    if len(intervals) == 0:
-        intervals.append([position, 1])
-    else:
-        #  why not just intervals[-1][0]    *shouldn't this be position - intervals[-1:][0][1]
-        if intervals[-1:][0][0] == (position - intervals[-1:][0][1]): #(position - 1):
-            intervals[-1:][0][1] += 1
-        else:
-            intervals.append([position, 1])
-
-# intervals in format
-# (start_pos, length)
+# dict with all the antigens that we want to remove to reduce noise
+blacklist_anti = {"AAB69830", "AAT64746", "AAT64858", "AFG72085", "AAT64754", "AAT64870"}
 
 def encode(shape, serum_seq, antigen_seq):
     global aaindex_list
@@ -87,15 +75,17 @@ def construct_x(serum, sequences, distances, len_sequence):
                 try:
                     name = entries[0].split("/")[0]
                     sequence = "".join(entries[1:])
-                    if name not in sequence_dict.keys():
+                    if name not in sequence_dict.keys() and name not in blacklist_anti:
                         sequence_dict[name] = sequence
                 except Exception as e:
                     print(e)
 
 
 
-
-        serum_sequence = sequence_dict[serum]
+        try:
+            serum_sequence = sequence_dict[serum]
+        except KeyError:
+            return False
 
 
         i = 0
