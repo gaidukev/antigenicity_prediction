@@ -9,8 +9,10 @@ import numpy as np
 import get_metrics
 from sklearn import metrics
 
-distances = "3d_distances_augmented.csv" # this contains euclidean distances
-alignment = "[augmented] muscle alignment.fa" # .fa alignment file
+import json
+
+distances = "bedford_dist_with_accession.csv" # this contains euclidean distances
+alignment = "sequences_fewer.json" # .fa alignment file
 
 dist = pd.read_csv(distances)
 sera = list(dist.columns)
@@ -19,7 +21,19 @@ sera = list(dist.columns)
 # construct features for first serum x all antigens
 serum = sera[1]
 start_pos = 0
-len_sequence = 566 # standardized sequence length
+len_sequence = 567 # standardized sequence length
+sequence_dict = {}
+
+with open("sequences_fewer.json", "r") as infile:
+
+    sequence_dict = json.load(infile)
+
+serum = None
+for col in range(1, len(sera)):
+    if sera[col] in sequence_dict.keys():
+        serum = sera[col]
+
+
 x_vals = aaindex_vectors.construct_x(serum, alignment, distances, len_sequence)
 #print(x_vals.any() != 0)
 y_vals = aaindex_vectors.construct_y(serum, distances)
@@ -30,24 +44,26 @@ y_vals = aaindex_vectors.construct_y(serum, distances)
 #print(sera)
 for i in range(2, len(sera)):
     # construct features for rest of sera x all antigens
-    serum = sera[i]
-    new_x_vals = aaindex_vectors.construct_x(serum, alignment, distances, len_sequence)
+    if sera[i] in sequence_dict.keys():
+        serum = sera[i]
+        new_x_vals = aaindex_vectors.construct_x(serum, alignment, distances, len_sequence)
 
-    # another way to construct features -- using vstack (instead of concat) (they may be the same?)
-    # x_vals = np.vstack((x_vals, new_x_vals))
-    # y_vals = np.hstack((y_vals, aaindex_vectors.construct_y(serum, distances)))
-    x_vals = np.concatenate((x_vals, new_x_vals))
-    y_vals = np.concatenate((y_vals, aaindex_vectors.construct_y(serum, distances)))
+        # another way to construct features -- using vstack (instead of concat) (they may be the same?)
+        # x_vals = np.vstack((x_vals, new_x_vals))
+        # y_vals = np.hstack((y_vals, aaindex_vectors.construct_y(serum, distances)))
+        x_vals = np.concatenate((x_vals, new_x_vals))
+        y_vals = np.concatenate((y_vals, aaindex_vectors.construct_y(serum, distances)))
 
 
 # get a random permutation of x and y values (together)
 p = np.random.permutation(len(x_vals))
+print(x_vals.shape, y_vals.shape)
 x_vals, y_vals = x_vals[p], y_vals[p]
 
 
 # amount of data to use as training data (picked arbitrarily)
 # make it < 2800
-train_amt = 2500
+train_amt = 7000
 
 # split into testing and training data
 x_train, x_test = x_vals[:train_amt, :, :], x_vals[train_amt:, :, :]
@@ -80,17 +96,17 @@ model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredLogarithmicError
 model.summary()
 
 # fit model with 15 epochs
-history = model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=50)
+history = model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=30)
 
 
-ypred = model.predict(x_test)
+ypred = model.predict(x_vals)
 
 ypred2 = np.zeros(ypred.shape)
 ytrue = np.zeros(ypred.shape)
 for val in range(len(ytrue)):
     if ypred[val] > 4:
         ypred2[val] = 1
-    if y_test[val] > 4:
+    if y_vals[val] > 4:
         ytrue[val] = 1
 
 try:
@@ -100,8 +116,8 @@ try:
 except:
     pass
 
-print("ACCURACY: ", get_metrics.get_accuracy(y_test, ypred))
-print("SENSITIVITY: ", get_metrics.get_sensitivity(y_test, ypred))
-print("SPECIFICITY: ", get_metrics.get_specificity(y_test, ypred))
+print("ACCURACY: ", get_metrics.get_accuracy(y_vals, ypred))
+print("SENSITIVITY: ", get_metrics.get_sensitivity(y_vals, ypred))
+print("SPECIFICITY: ", get_metrics.get_specificity(y_vals, ypred))
 # print("MCC: ", get_metrics.get_mcc(y_test, ypred))
 

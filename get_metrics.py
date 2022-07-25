@@ -13,21 +13,27 @@ def set_four(new_four):
     global four
     four = new_four
 
+def evaluate(y_true, y_pred):
+    global true_pos, true_neg, false_neg, false_pos
+    for i in range(len(y_true)):
+        y_t = y_true[i]
+        y_p = y_pred[i]
+        print(y_t, y_p)
+        if y_t > four and y_p > four:
+            true_pos += 1
+        elif y_t > four and y_p < four:
+            false_neg += 1
+        elif y_t < four and y_p > four:
+            false_pos += 1
+        elif y_t < four and y_p < four:
+            true_neg += 1
+
 # find accuracy metrics as per the paper (formulas are also from the paper)
 def get_accuracy(y_true, y_pred):
     global true_pos, true_neg, false_pos, false_neg, evaled
     if not evaled:
-        for i in range(len(y_true)):
-            y_t = y_true[i]
-            y_p = y_pred[i]
-            if y_t > four and y_p > four:
-                true_pos += 1
-            elif y_t > four and y_p < four:
-                false_neg += 1
-            elif y_t < four and y_p > four:
-                false_pos += 1
-            elif y_t < four and y_p < four:
-                true_neg += 1
+        evaluate(y_true, y_pred)
+
         evaled = True
     num = true_pos + true_neg
     denom = true_pos + true_neg + false_pos + false_neg
@@ -37,17 +43,7 @@ def get_accuracy(y_true, y_pred):
 def get_sensitivity(y_true, y_pred):
     global true_pos, true_neg, false_pos, false_neg, evaled
     if not evaled:
-        for i in range(len(y_true)):
-            y_t = y_true[i]
-            y_p = y_pred[i]
-            if y_t < four and y_p < four:
-                true_pos += 1
-            elif y_t < four and y_p > four:
-                false_neg += 1
-            elif y_t > four and y_p < four:
-                false_pos += 1
-            elif y_t > four and y_p > four:
-                true_neg += 1
+        evaluate(y_true, y_pred)
         evaled = True
     try:
         return true_pos / (true_pos + false_neg)
@@ -57,17 +53,7 @@ def get_sensitivity(y_true, y_pred):
 def get_specificity(y_true, y_pred):
     global true_pos, true_neg, false_pos, false_neg, evaled
     if not evaled:
-        for i in range(len(y_true)):
-            y_t = y_true[i]
-            y_p = y_pred[i]
-            if y_t > four and y_p > four:
-                true_pos += 1
-            elif y_t > four and y_p < four:
-                false_neg += 1
-            elif y_t < four and y_p > four:
-                false_pos += 1
-            elif y_t < four and y_p < four:
-                true_neg += 1
+        evaluate(y_true, y_pred)
         evaled = True
     print("FALSE POS: ", false_pos, "FALSE NEG: ", false_neg, "TRUE POS: ", true_pos, "TRUE NEG: ", true_neg)
     return true_neg / (true_neg + false_pos)
@@ -75,17 +61,7 @@ def get_specificity(y_true, y_pred):
 def get_mcc(y_true, y_pred):
     global true_pos, true_neg, false_pos, false_neg, evaled
     if not evaled:
-        for i in range(len(y_true)):
-            y_t = y_true[i]
-            y_p = y_pred[i]
-            if y_t > four and y_p > four:
-                true_pos += 1
-            elif y_t > four and y_p < four:
-                false_neg += 1
-            elif y_t < four and y_p > four:
-                false_pos += 1
-            elif y_t < four and y_p < four:
-                true_neg += 1
+        evaluate(y_true, y_pred)
         evaled = True
     num = true_pos * true_neg - false_pos * false_neg
     denom = (true_pos + false_neg) * (true_pos + false_neg) * (true_neg + false_pos) * (true_neg + false_neg)

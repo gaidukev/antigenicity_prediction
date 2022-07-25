@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 import math
@@ -12,19 +13,8 @@ pos = []
 with open("positions.json", "r") as file:
     pos = json.load(file)
 
+filtered_df = ""
 
-intervals = []
-for position in pos:
-    if len(intervals) == 0:
-        intervals.append([position, 1])
-    else:
-        if intervals[-1:][0][0] == (position - 1):
-            intervals[-1:][0][1] += 1
-        else:
-            intervals.append([position, 1])
-
-# intervals in format
-# (start_pos, length)
 
 def encode(shape, serum_seq, antigen_seq):
     global aaindex_list
@@ -56,6 +46,17 @@ def encode(shape, serum_seq, antigen_seq):
 
 
 sequence_dict = {}
+def filter_df(df):
+    global filtered_df
+    global sequence_dict
+
+    df_new = df
+    for i in df.index:
+        if i not in sequence_dict.keys():
+            df_new = df_new.drop(i, axis=0)
+
+    filtered_df = df_new
+
 def construct_x(serum, sequences, distances, len_sequence):
     # takes in the serum name and all antigen sequences 
     # also: the csv containing all antigenic distances, 
@@ -68,7 +69,9 @@ def construct_x(serum, sequences, distances, len_sequence):
     num_pos = len(pos)
 
     df = pd.read_csv(distances, index_col = 0)
-    x = np.zeros((df.shape[0], num_pos, len(aaindex_list)))
+    global filtered_df
+
+
     # SHAPE: (num_antigens, 566, 10)
     # where 566 is the standardized length of all the aligned sequences
     # and 10 is the # of aaindeces being examined
@@ -77,19 +80,17 @@ def construct_x(serum, sequences, distances, len_sequence):
     sep = "/"
     with open(sequences, "r") as seq_file:
         
-        content = seq_file.read().split(">")
-        serum_sequence = ""
+
 
         if len(sequence_dict.keys())==0:
-            for line in content:
-                entries = line.split("\n")
-                try:
-                    name = entries[0].split("/")[0]
-                    sequence = "".join(entries[1:])
-                    if name not in sequence_dict.keys():
-                        sequence_dict[name] = sequence
-                except Exception as e:
-                    print(e)
+            sequence_dict = json.load(seq_file)
+
+        if type(filtered_df) == str:
+            filter_df(df)
+        df = filtered_df
+
+            
+        x = np.zeros((df.shape[0], num_pos, len(aaindex_list)))
 
 
 
@@ -131,8 +132,12 @@ def scale(vector):
 
 def construct_y(serum, distances):
     # y values are the distances between each antigen-serum pair
-    
+    global filtered_df
     df = pd.read_csv(distances)
+
+    if type(filtered_df) == str:
+        filter_df(df)
+    df = filtered_df
     y = np.zeros(df.shape[0], )
     for antigen_index in range(y.shape[0]):
         #y_val = df.iloc[antigen_index].loc[serum]
